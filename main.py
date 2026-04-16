@@ -164,6 +164,7 @@ def create_revio_ticket(customer_name: str, company: str, issue: str):
         "company": company,
         "description": issue,
         "subject": f"Support Ticket - {company} - {customer_name}"
+        "priority_id": 1
     }
 
     url = f"{REVIO_BASE_URL}/Tickets"
