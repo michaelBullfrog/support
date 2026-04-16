@@ -9,6 +9,9 @@ WEBEX_BOT_TOKEN = os.getenv("WEBEX_BOT_TOKEN", "")
 REVIO_PSA_BASE_URL = os.getenv("REVIO_PSA_BASE_URL", "https://api.psarev.io")
 REVIO_PSA_API_KEY = os.getenv("REVIO_PSA_API_KEY", "")
 REVIO_PSA_HOST = os.getenv("REVIO_PSA_HOST", "")
+REVIO_PSA_TICKET_TYPE_ID = int(os.getenv("REVIO_PSA_TICKET_TYPE_ID", "0"))
+REVIO_PSA_TICKET_STATUS_ID = int(os.getenv("REVIO_PSA_TICKET_STATUS_ID", "0"))
+REVIO_PSA_TICKET_PRIORITY_ID = int(os.getenv("REVIO_PSA_TICKET_PRIORITY_ID", "0"))
 
 WEBEX_HEADERS = {
     "Authorization": f"Bearer {WEBEX_BOT_TOKEN}",
@@ -183,8 +186,11 @@ def create_revio_ticket(customer_name: str, company: str, issue: str):
     headers = get_psa_headers()
 
     payload = {
-        "summary": f"Support Ticket - {company} - {customer_name}",
-        "description": issue
+        "Summary": f"Support Ticket - {company} - {customer_name}",
+        "TicketDescription": issue,
+        "TicketTypeId": REVIO_PSA_TICKET_TYPE_ID,
+        "TicketStatusId": REVIO_PSA_TICKET_STATUS_ID,
+        "TicketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID
     }
 
     url = f"{REVIO_PSA_BASE_URL}/psac/api/v1/ticket"
