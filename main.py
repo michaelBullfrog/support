@@ -6,9 +6,9 @@ import json
 app = FastAPI()
 
 WEBEX_BOT_TOKEN = os.getenv("WEBEX_BOT_TOKEN", "")
-REVIO_BASE_URL = os.getenv("REVIO_BASE_URL", "")
-REVIO_BASIC_AUTH = os.getenv("REVIO_BASIC_AUTH", "")
-REVIO_API_KEY = os.getenv("REVIO_API_KEY", "")
+REVIO_PSA_BASE_URL = os.getenv("REVIO_PSA_BASE_URL", "https://api.psarev.io")
+REVIO_PSA_API_KEY = os.getenv("REVIO_PSA_API_KEY", "")
+REVIO_PSA_HOST = os.getenv("REVIO_PSA_HOST", "")
 
 WEBEX_HEADERS = {
     "Authorization": f"Bearer {WEBEX_BOT_TOKEN}",
@@ -150,34 +150,54 @@ def get_attachment_action(action_id: str):
     return r.json()
 
 
-def create_revio_ticket(customer_name: str, company: str, issue: str):
-    headers = {
-        "Authorization": REVIO_BASIC_AUTH,
+def get_revio_psa_token():
+    url = f"{REVIO_PSA_BASE_URL}/api/v1/auth/api-key/exchange"
+    payload = {"apiKey": REVIO_PSA_API_KEY}
+
+    r = requests.post(
+        url,
+        headers={"Content-Type": "application/json"},
+        json=payload,
+        timeout=30
+    )
+    print(f"[DEBUG] PSA token exchange status: {r.status_code}")
+    print(f"[DEBUG] PSA token exchange response: {r.text[:2000]}")
+    r.raise_for_status()
+
+    data = r.json()
+    token = data.get("data", {}).get("token")
+    if not token:
+        raise Exception("No PSA token returned from API key exchange")
+
+    return token
+
+def get_psa_headers():
+    token = get_revio_psa_token()
+    return {
+        "Authorization": f"Bearer {token}",
+        "X-Revio-Host": REVIO_PSA_HOST,
         "Content-Type": "application/json"
     }
 
-    if REVIO_API_KEY:
-        headers["x-api-key"] = REVIO_API_KEY
+def create_revio_ticket(customer_name: str, company: str, issue: str):
+    headers = get_psa_headers()
 
     payload = {
-        "customer_name": customer_name,
-        "company": company,
-        "description": issue,
-        "subject": f"Support Ticket - {company} - {customer_name}",
-        "priority_id": 1
+        "summary": f"Support Ticket - {company} - {customer_name}",
+        "description": issue
     }
 
-    url = f"{REVIO_BASE_URL}/Tickets"
-    print(f"[DEBUG] Rev.io URL: {url}")
-    print(f"[DEBUG] Rev.io payload: {json.dumps(payload)}")
+    url = f"{REVIO_PSA_BASE_URL}/psac/api/v1/ticket"
+    print(f"[DEBUG] PSA ticket URL: {url}")
+    print(f"[DEBUG] PSA ticket payload: {json.dumps(payload)}")
 
     r = requests.post(url, headers=headers, json=payload, timeout=30)
 
-    print(f"[DEBUG] Rev.io status: {r.status_code}")
-    print(f"[DEBUG] Rev.io response: {r.text[:4000]}")
+    print(f"[DEBUG] PSA ticket status: {r.status_code}")
+    print(f"[DEBUG] PSA ticket response: {r.text[:4000]}")
 
     if not r.ok:
-        raise Exception(f"Rev.io {r.status_code}: {r.text[:1000]}")
+        raise Exception(f"Rev.io PSA {r.status_code}: {r.text[:1500]}")
 
     return r.json()
 
