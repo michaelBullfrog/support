@@ -159,7 +159,6 @@ def create_revio_ticket(customer_name: str, company: str, issue: str):
     if REVIO_API_KEY:
         headers["x-api-key"] = REVIO_API_KEY
 
-    # Replace this payload and endpoint if your Rev.io tenant needs different fields
     payload = {
         "customer_name": customer_name,
         "company": company,
@@ -167,18 +166,18 @@ def create_revio_ticket(customer_name: str, company: str, issue: str):
         "subject": f"Support Ticket - {company} - {customer_name}"
     }
 
-    print(f"[DEBUG] Rev.io URL: {REVIO_BASE_URL}/Tickets")
+    url = f"{REVIO_BASE_URL}/Tickets"
+    print(f"[DEBUG] Rev.io URL: {url}")
     print(f"[DEBUG] Rev.io payload: {json.dumps(payload)}")
 
-    r = requests.post(
-        f"{REVIO_BASE_URL}/Tickets",
-        headers=headers,
-        json=payload,
-        timeout=30
-    )
+    r = requests.post(url, headers=headers, json=payload, timeout=30)
+
     print(f"[DEBUG] Rev.io status: {r.status_code}")
-    print(f"[DEBUG] Rev.io response: {r.text[:1000]}")
-    r.raise_for_status()
+    print(f"[DEBUG] Rev.io response: {r.text[:4000]}")
+
+    if not r.ok:
+        raise Exception(f"Rev.io {r.status_code}: {r.text[:1000]}")
+
     return r.json()
 
 
