@@ -163,7 +163,7 @@ def create_revio_ticket(customer_name: str, company: str, issue: str):
         "customer_name": customer_name,
         "company": company,
         "description": issue,
-        "subject": f"Support Ticket - {company} - {customer_name}"
+        "subject": f"Support Ticket - {company} - {customer_name}",
         "priority_id": 1
     }
 
