@@ -302,7 +302,7 @@ async def webex_webhook(request: Request):
 
             post_webex_message(
                 room_id,
-                f"Ticket created successfully for {customer_name} ({email}) at {company}. Ticket ID: {ticket_id}",
+                f"Ticket created successfully for {customer_name} ({email}) at {company}. Ticket Status: {ticket_id}",
             )
             return {"ok": True, "type": "attachmentAction", "ticket": ticket}
 
