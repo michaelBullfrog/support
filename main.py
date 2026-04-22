@@ -223,23 +223,25 @@ def create_revio_ticket(
 ):
     headers = get_psa_headers()
 
-    # Keep the ticket title short. Put full details in ticketDescription/workRequested.
-    summary = f"{company} - {issue} - {customer_name}"
-    summary = summary[:150]
+    # Rev.io PSA ticketDescription must be 150 characters or less.
+    # Do not send customerId if it is nullable/unknown.
+    short_ticket_description = f"{issue} - {company} - {customer_name}"
+    short_ticket_description = short_ticket_description[:150]
+
+    work_requested = (
+        f"Submitted by: {customer_name}\n"
+        f"Email: {email}\n"
+        f"Company: {company}\n"
+        f"Issue Type: {issue}\n\n"
+        f"Description:\n{description}"
+    )
 
     payload = {
-        "customerId": 0,
-        "ticketDescription": (
-            f"Issue Type: {issue}\n"
-            f"Submitted by: {customer_name}\n"
-            f"Email: {email}\n"
-            f"Company: {company}\n\n"
-            f"Description:\n{description}"
-        ),
+        "ticketDescription": short_ticket_description,
         "ticketTypeId": REVIO_PSA_TICKET_TYPE_ID,
         "ticketStatusId": REVIO_PSA_TICKET_STATUS_ID,
         "ticketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID,
-        "workRequested": description,
+        "workRequested": work_requested,
         "contactsAssociated": [
             {
                 "contactId": 0,
