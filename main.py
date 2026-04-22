@@ -193,8 +193,13 @@ def get_psa_headers():
 def create_revio_ticket(customer_name: str, company: str, email: str, issue: str):
     headers = get_psa_headers()
 
+    # Rev.io PSA appears to limit Summary to 150 characters.
+    # Keep the title short and put the full issue in TicketDescription.
+    summary = f"{company} - {customer_name}"
+    summary = summary[:150]
+
     payload = {
-        "Summary": f"Support Ticket - {company} - {customer_name}",
+        "Summary": summary,
         "TicketDescription": (
             f"Submitted by: {customer_name}\n"
             f"Email: {email}\n"
