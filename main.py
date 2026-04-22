@@ -59,6 +59,18 @@ def post_webex_message(room_id: str, text: str):
     return r.json()
 
 
+def delete_webex_message(message_id: str):
+    r = requests.delete(
+        f"https://webexapis.com/v1/messages/{message_id}",
+        headers={"Authorization": f"Bearer {WEBEX_BOT_TOKEN}"},
+        timeout=30,
+    )
+    print(f"[DEBUG] Delete message status: {r.status_code}")
+    print(f"[DEBUG] Delete message response: {r.text[:1000]}")
+    r.raise_for_status()
+    return True
+
+
 def post_support_card(room_id: str):
     card_payload = {
         "roomId": room_id,
@@ -372,6 +384,15 @@ async def webex_webhook(request: Request):
             return {"ok": False, "error": "Missing action ID"}
 
         action = get_attachment_action(action_id)
+
+        card_message_id = action.get("messageId")
+        if card_message_id:
+            try:
+                delete_webex_message(card_message_id)
+                print(f"[DEBUG] Deleted submitted card message: {card_message_id}")
+            except Exception as e:
+                print(f"[WARN] Could not delete submitted card message: {e}")
+
         inputs = action.get("inputs", {})
         room_id = action.get("roomId")
 
