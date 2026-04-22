@@ -102,12 +102,36 @@ def post_support_card(room_id: str):
                             "placeholder": "Enter your email",
                         },
                         {
-                            "type": "Input.Text",
+                            "type": "Input.ChoiceSet",
                             "id": "issue",
-                            "label": "Issue (150 Characters or less)",
-                            "placeholder": "Describe the problem in 150 characters or less",
+                            "label": "Issue",
+                            "style": "compact",
+                            "isRequired": True,
+                            "errorMessage": "Please select an issue type.",
+                            "choices": [
+                                {
+                                    "title": "Voicemail Pin Reset",
+                                    "value": "Voicemail Pin Reset",
+                                },
+                                {
+                                    "title": "Outage",
+                                    "value": "Outage",
+                                },
+                                {
+                                    "title": "Other",
+                                    "value": "Other",
+                                },
+                            ],
+                        },
+                        {
+                            "type": "Input.Text",
+                            "id": "description",
+                            "label": "Description",
+                            "placeholder": "Describe what you need help with",
                             "isMultiline": True,
-                           },
+                            "isRequired": True,
+                            "errorMessage": "Please enter a description.",
+                        },
                     ],
                     "actions": [
                         {
@@ -190,25 +214,55 @@ def get_psa_headers():
     }
 
 
-def create_revio_ticket(customer_name: str, company: str, email: str, issue: str):
+def create_revio_ticket(
+    customer_name: str,
+    company: str,
+    email: str,
+    issue: str,
+    description: str,
+):
     headers = get_psa_headers()
 
-    # Rev.io PSA appears to limit Summary to 150 characters.
-    # Keep the title short and put the full issue in TicketDescription.
-    summary = f"{company} - {customer_name}"
+    # Keep the ticket title short. Put full details in ticketDescription/workRequested.
+    summary = f"{company} - {issue} - {customer_name}"
     summary = summary[:150]
 
     payload = {
-        "Summary": summary,
-        "TicketDescription": (
+        "customerId": 0,
+        "ticketDescription": (
+            f"Issue Type: {issue}\n"
             f"Submitted by: {customer_name}\n"
             f"Email: {email}\n"
             f"Company: {company}\n\n"
-            f"Issue:\n{issue}"
+            f"Description:\n{description}"
         ),
-        "TicketTypeId": REVIO_PSA_TICKET_TYPE_ID,
-        "TicketStatusId": REVIO_PSA_TICKET_STATUS_ID,
-        "TicketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID,
+        "ticketTypeId": REVIO_PSA_TICKET_TYPE_ID,
+        "ticketStatusId": REVIO_PSA_TICKET_STATUS_ID,
+        "ticketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID,
+        "workRequested": description,
+        "contactsAssociated": [
+            {
+                "contactId": 0,
+                "contactName": customer_name,
+                "email": email,
+                "phoneNumber": "",
+                "role": "Requester",
+            }
+        ],
+        "customFields": [
+            {
+                "key": "Issue Type",
+                "value": issue,
+            },
+            {
+                "key": "Company",
+                "value": company,
+            },
+            {
+                "key": "Submitter Email",
+                "value": email,
+            },
+        ],
     }
 
     url = f"{REVIO_PSA_BASE_URL}/psac/api/v1/ticket"
@@ -290,24 +344,31 @@ async def webex_webhook(request: Request):
         company = inputs.get("company", "").strip()
         email = inputs.get("email", "").strip()
         issue = inputs.get("issue", "").strip()
+        description = inputs.get("description", "").strip()
 
         if not room_id:
             return {"ok": False, "error": "Missing roomId"}
 
-        if not customer_name or not company or not email or not issue:
+        if not customer_name or not company or not email or not issue or not description:
             post_webex_message(
                 room_id,
-                "Ticket not created. Name, company, email, and issue are all required.",
+                "Ticket not created. Name, company, email, issue, and description are all required.",
             )
             return {"ok": False, "error": "Missing required fields"}
 
         try:
-            ticket = create_revio_ticket(customer_name, company, email, issue)
+            ticket = create_revio_ticket(
+                customer_name,
+                company,
+                email,
+                issue,
+                description,
+            )
             ticket_id = ticket.get("id") or ticket.get("ticket_id") or "created"
 
             post_webex_message(
                 room_id,
-                f"Ticket created successfully for {customer_name} ({email}) at {company}. Ticket Status: {ticket_id}",
+                f"Ticket created successfully for {customer_name} ({email}) at {company}. Issue: {issue}. Ticket ID: {ticket_id}",
             )
             return {"ok": True, "type": "attachmentAction", "ticket": ticket}
 
