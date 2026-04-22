@@ -180,13 +180,6 @@ def post_support_card(room_id: str):
                             "isRequired": True,
                             "errorMessage": "Please enter a description.",
                         },
-                        {
-                            "type": "Input.Text",
-                            "id": "attachment_url",
-                            "label": "Attachment URL",
-                            "placeholder": "Optional: paste a screenshot, file, or recording link",
-                            "isRequired": False,
-                        },
                     ],
                     "actions": [
                         {
@@ -275,7 +268,6 @@ def create_revio_ticket(
     email: str,
     issue: str,
     description: str,
-    attachment_url: str = "",
 ):
     headers = get_psa_headers()
 
@@ -292,10 +284,6 @@ def create_revio_ticket(
         f"Issue Type: {issue}"
     )
 
-    attachments = []
-    if attachment_url:
-        attachments.append(attachment_url)
-
     payload = {
         "customerId": None,
         "ticketDescription": ticket_description,
@@ -303,7 +291,6 @@ def create_revio_ticket(
         "ticketStatusId": REVIO_PSA_TICKET_STATUS_ID,
         "ticketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID,
         "workRequested": work_requested,
-        "attachments": attachments,
         "contactsAssociated": [
             {
                 "contactId": 0,
@@ -414,7 +401,6 @@ async def webex_webhook(request: Request):
         email = inputs.get("email", "").strip()
         issue = inputs.get("issue", "").strip()
         description = inputs.get("description", "").strip()
-        attachment_url = inputs.get("attachment_url", "").strip()
 
         if not room_id:
             return {"ok": False, "error": "Missing roomId"}
@@ -433,17 +419,12 @@ async def webex_webhook(request: Request):
                 email,
                 issue,
                 description,
-                attachment_url,
             )
             ticket_id = ticket.get("id") or ticket.get("ticket_id") or "created"
 
-            attachment_note = ""
-            if attachment_url:
-                attachment_note = " Attachment URL included."
-
             post_webex_message(
                 room_id,
-                f"Ticket created successfully for {customer_name} ({email}) at {company}. Issue: {issue}. Ticket ID: {ticket_id}.{attachment_note}",
+                f"Ticket created successfully for {customer_name} ({email}) at {company}. Issue: {issue}. Ticket ID: {ticket_id}",
             )
             return {"ok": True, "type": "attachmentAction", "ticket": ticket}
 
