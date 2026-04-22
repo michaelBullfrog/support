@@ -224,20 +224,21 @@ def create_revio_ticket(
     headers = get_psa_headers()
 
     # Rev.io PSA ticketDescription must be 150 characters or less.
-    # Do not send customerId if it is nullable/unknown.
-    short_ticket_description = f"{issue} - {company} - {customer_name}"
-    short_ticket_description = short_ticket_description[:150]
+    # Map the Webex Issue dropdown directly to ticketDescription.
+    ticket_description = issue[:150]
 
+    # Map the Webex Description field to workRequested.
     work_requested = (
+        f"Description:\n{description}\n\n"
         f"Submitted by: {customer_name}\n"
         f"Email: {email}\n"
         f"Company: {company}\n"
-        f"Issue Type: {issue}\n\n"
-        f"Description:\n{description}"
+        f"Issue Type: {issue}"
     )
 
     payload = {
-        "ticketDescription": short_ticket_description,
+        "customerId": None,
+        "ticketDescription": ticket_description,
         "ticketTypeId": REVIO_PSA_TICKET_TYPE_ID,
         "ticketStatusId": REVIO_PSA_TICKET_STATUS_ID,
         "ticketPriorityId": REVIO_PSA_TICKET_PRIORITY_ID,
@@ -252,10 +253,6 @@ def create_revio_ticket(
             }
         ],
         "customFields": [
-            {
-                "key": "Issue Type",
-                "value": issue,
-            },
             {
                 "key": "Company",
                 "value": company,
