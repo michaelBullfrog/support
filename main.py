@@ -104,10 +104,10 @@ def post_support_card(room_id: str):
                         {
                             "type": "Input.Text",
                             "id": "issue",
-                            "label": "Issue",
-                            "placeholder": "Describe the problem",
+                            "label": "Issue (150 Characters or less)",
+                            "placeholder": "Describe the problem in 150 characters or less",
                             "isMultiline": True,
-                        },
+                           },
                     ],
                     "actions": [
                         {
