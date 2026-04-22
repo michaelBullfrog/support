@@ -101,56 +101,64 @@ def post_support_card(room_id: str):
                             "label": "Email",
                             "placeholder": "Enter your email",
                         },
-                        "choices": [
-                            {
-                                "title": "Audio quality / bad call quality",
-                                "value": "Audio quality / bad call quality",
-                            },
-                            {
-                                "title": "Clerk Chat issue",
-                                "value": "Clerk Chat issue",
-                            },
-                            {
-                                "title": "Contact Center",
-                                "value": "Contact Center",
-                            },
-                            {
-                                "title": "Login issue",
-                                "value": "Login issue",
-                            },
-                            {
-                            "title": "New phone number",
-                            "value": "New phone number",
-                            },
-                            {
-                                "title": "New user",
-                                "value": "New user",
-                            },
-                            {
-                                "title": "Number being marked as spam",
-                                "value": "Number being marked as spam",
-                            },
-                            {
-                                "title": "Number out of service",
-                                "value": "Number out of service",
-                            },
-                            {
-                                "title": "Outage",
-                                "value": "Outage",
-                            },
-                            {
-                                "title": "Port",
-                                "value": "Port",
-                            },
-                            {
-                                "title": "Voicemail Pin Reset",
-                                "value": "Voicemail Pin Reset",
-                            },
-                            {
-                                "title": "Other",
-                                "value": "Other",
-                            },
-                        ],,
+                        {
+                            "type": "Input.ChoiceSet",
+                            "id": "issue",
+                            "label": "Issue",
+                            "style": "compact",
+                            "isRequired": True,
+                            "errorMessage": "Please select an issue type.",
+                            "choices": [
+                                {
+                                    "title": "Audio quality / bad call quality",
+                                    "value": "Audio quality / bad call quality",
+                                },
+                                {
+                                    "title": "Clerk Chat issue",
+                                    "value": "Clerk Chat issue",
+                                },
+                                {
+                                    "title": "Contact Center",
+                                    "value": "Contact Center",
+                                },
+                                {
+                                    "title": "Login issue",
+                                    "value": "Login issue",
+                                },
+                                {
+                                    "title": "New phone number",
+                                    "value": "New phone number",
+                                },
+                                {
+                                    "title": "New user",
+                                    "value": "New user",
+                                },
+                                {
+                                    "title": "Number being marked as spam",
+                                    "value": "Number being marked as spam",
+                                },
+                                {
+                                    "title": "Number out of service",
+                                    "value": "Number out of service",
+                                },
+                                {
+                                    "title": "Outage",
+                                    "value": "Outage",
+                                },
+                                {
+                                    "title": "Port",
+                                    "value": "Port",
+                                },
+                                {
+                                    "title": "Voicemail Pin Reset",
+                                    "value": "Voicemail Pin Reset",
+                                },
+                                {
+                                    "title": "Other",
+                                    "value": "Other",
+                                },
+                            ],
+                        },
                         {
                             "type": "Input.Text",
                             "id": "description",
